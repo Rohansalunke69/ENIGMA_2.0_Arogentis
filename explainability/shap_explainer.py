@@ -24,7 +24,19 @@ logger = logging.getLogger(__name__)
 
 
 class EEGShapExplainer:
-    """SHAP explainability wrapper for tree-based schizophrenia risk models."""
+    """SHAP explainability wrapper for schizophrenia risk models.
+
+    Auto-detects model type and selects the correct SHAP explainer:
+      - TreeExplainer for: RandomForest, XGBoost, LightGBM, GradientBoosting
+      - KernelExplainer for: SVM, LogisticRegression, other models
+    """
+
+    # Model types that support TreeExplainer (exact, fast)
+    TREE_MODEL_TYPES = (
+        "RandomForestClassifier", "GradientBoostingClassifier",
+        "XGBClassifier", "LGBMClassifier",
+        "ExtraTreesClassifier", "DecisionTreeClassifier",
+    )
 
     def __init__(self, model_path: str, feature_names: list[str]):
         """
@@ -32,12 +44,30 @@ class EEGShapExplainer:
             model_path:    Path to saved sklearn Pipeline (.pkl).
             feature_names: Ordered list matching feature columns.
         """
-        self.pipeline     = joblib.load(model_path)
-        self.clf          = self.pipeline.named_steps["clf"]
-        self.scaler       = self.pipeline.named_steps["scaler"]
+        self.pipeline      = joblib.load(model_path)
+        self.clf           = self.pipeline.named_steps["clf"]
+        self.scaler        = self.pipeline.named_steps["scaler"]
         self.feature_names = feature_names
-        self.explainer    = shap.TreeExplainer(self.clf)
-        logger.info(f"SHAP explainer initialised with {len(feature_names)} features.")
+        self.explainer_type = None
+
+        clf_name = type(self.clf).__name__
+
+        if clf_name in self.TREE_MODEL_TYPES:
+            # TreeExplainer: exact SHAP values, fast
+            self.explainer = shap.TreeExplainer(self.clf)
+            self.explainer_type = "tree"
+            logger.info(f"SHAP TreeExplainer initialised for {clf_name} with {len(feature_names)} features.")
+        else:
+            # KernelExplainer: model-agnostic, works with SVM/LR/any model
+            # Use a small background sample for efficiency
+            logger.info(f"Model is {clf_name} — using SHAP KernelExplainer (model-agnostic).")
+            # Create a small background dataset (zeros as baseline)
+            background = np.zeros((1, len(feature_names)))
+            self.explainer = shap.KernelExplainer(
+                self.pipeline.predict_proba, background
+            )
+            self.explainer_type = "kernel"
+            logger.info(f"SHAP KernelExplainer initialised for {clf_name} with {len(feature_names)} features.")
 
     def explain(self, features: np.ndarray) -> dict:
         """
@@ -52,24 +82,36 @@ class EEGShapExplainer:
         if features.ndim == 1:
             features = features.reshape(1, -1)
 
-        X_scaled = self.scaler.transform(features)
-        shap_values = self.explainer.shap_values(X_scaled)
+        if self.explainer_type == "tree":
+            # TreeExplainer operates on the raw classifier → needs scaled input
+            X_input = self.scaler.transform(features)
+            shap_values = self.explainer.shap_values(X_input)
+        else:
+            # KernelExplainer wraps pipeline.predict_proba → pass raw features
+            X_input = features
+            shap_values = self.explainer.shap_values(X_input, nsamples=100)
 
-        # For binary classification RF: shap_values is list [class0, class1]
-        # For XGBoost: shap_values is 2D array
+        # For binary classification: shap_values may be list [class0, class1] or 2D/3D array
         if isinstance(shap_values, list):
             sv = shap_values[1][0]   # positive class (schizophrenia)
+        elif shap_values.ndim == 3:
+            sv = shap_values[0, :, 1]  # (samples, features, classes) → class 1
         else:
             sv = shap_values[0]
 
         top_idx = np.argsort(np.abs(sv))[::-1][:12]
 
+        # Extract base value safely
+        ev = self.explainer.expected_value
+        if isinstance(ev, (list, np.ndarray)):
+            base_val = float(ev[1]) if len(ev) > 1 else float(ev[0])
+        else:
+            base_val = float(ev)
+
         return {
             "shap_values":   sv.tolist(),
             "feature_names": self.feature_names,
-            "base_value":    float(self.explainer.expected_value[1]
-                                   if isinstance(self.explainer.expected_value, (list, np.ndarray))
-                                   else self.explainer.expected_value),
+            "base_value":    base_val,
             "top_features": [
                 {
                     "feature":     self.feature_names[i],
@@ -109,9 +151,28 @@ class EEGShapExplainer:
         else:
             vals = shap_exp.values
 
+        # Safely extract scalar base_value (handles scalar, 1D, and multi-class)
+        try:
+            bv = shap_exp.base_values
+            if isinstance(bv, np.ndarray):
+                if bv.ndim == 0:
+                    base_val = float(bv)
+                elif bv.ndim == 1:
+                    # [base_class0, base_class1] → pick class 1 (schizophrenia)
+                    base_val = float(bv[1]) if bv.shape[0] > 1 else float(bv[0])
+                elif bv.ndim == 2:
+                    # (n_samples, n_classes) → first sample, class 1
+                    base_val = float(bv[0, 1]) if bv.shape[1] > 1 else float(bv[0, 0])
+                else:
+                    base_val = float(bv.flat[0])
+            else:
+                base_val = float(bv)
+        except Exception:
+            base_val = 0.0
+
         exp = shap.Explanation(
             values=vals[0],
-            base_values=shap_exp.base_values[0] if shap_exp.base_values.ndim > 0 else shap_exp.base_values,
+            base_values=base_val,
             data=X_scaled[0],
             feature_names=self.feature_names,
         )

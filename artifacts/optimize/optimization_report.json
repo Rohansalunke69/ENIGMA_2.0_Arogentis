@@ -1,0 +1,117 @@
+{
+  "dataset": {
+    "source": "RepOD \u2014 Olejarczyk & Jernajczyk (2017)",
+    "doi": "10.18150/repod.0107441",
+    "paradigm": "resting-state, eyes closed, awake",
+    "n_subjects": 28,
+    "n_schizophrenia": 14,
+    "n_controls": 14,
+    "original_features": 475,
+    "selected_features": 50
+  },
+  "feature_selection": {
+    "method": "SHAP (TreeExplainer)",
+    "top_k": 50,
+    "top_10_features": [
+      "rel_delta_CH2",
+      "diffent_delta_CH6",
+      "mean_CH15",
+      "variance_CH3",
+      "diffent_gamma_CH8",
+      "mean_CH5",
+      "diffent_delta_CH3",
+      "abs_gamma_CH8",
+      "hjorth_mobility_CH2",
+      "gamma_theta_ratio_CH2"
+    ]
+  },
+  "cv_method": "Leave-One-Subject-Out (LOSOCV)",
+  "results": {
+    "XGBoost": {
+      "model": "XGBoost",
+      "accuracy": 0.0,
+      "precision": 0.0,
+      "recall_sensitivity": 0.0,
+      "specificity": 0.0,
+      "f1_score": 0.0,
+      "roc_auc": 0.0,
+      "train_accuracy": 0.5185,
+      "train_test_gap": 0.5185,
+      "confusion_matrix": {
+        "TP": 0,
+        "FP": 14,
+        "FN": 14,
+        "TN": 0
+      }
+    },
+    "RandomForest": {
+      "model": "RandomForest",
+      "accuracy": 0.75,
+      "precision": 0.7692,
+      "recall_sensitivity": 0.7143,
+      "specificity": 0.7857,
+      "f1_score": 0.7407,
+      "roc_auc": 0.8469,
+      "train_accuracy": 1.0,
+      "train_test_gap": 0.25,
+      "confusion_matrix": {
+        "TP": 10,
+        "FP": 3,
+        "FN": 4,
+        "TN": 11
+      }
+    },
+    "LightGBM": {
+      "model": "LightGBM",
+      "accuracy": 0.5357,
+      "precision": 0.5294,
+      "recall_sensitivity": 0.6429,
+      "specificity": 0.4286,
+      "f1_score": 0.5806,
+      "roc_auc": 0.5306,
+      "train_accuracy": 1.0,
+      "train_test_gap": 0.4643,
+      "confusion_matrix": {
+        "TP": 9,
+        "FP": 8,
+        "FN": 5,
+        "TN": 6
+      }
+    },
+    "XGBoost-ALL-features": {
+      "model": "XGBoost-ALL",
+      "accuracy": 0.0,
+      "precision": 0.0,
+      "recall_sensitivity": 0.0,
+      "specificity": 0.0,
+      "f1_score": 0.0,
+      "roc_auc": 0.0,
+      "train_accuracy": 0.5185,
+      "train_test_gap": 0.5185,
+      "confusion_matrix": {
+        "TP": 0,
+        "FP": 14,
+        "FN": 14,
+        "TN": 0
+      }
+    }
+  },
+  "best_model": "RandomForest",
+  "best_metrics": {
+    "model": "RandomForest",
+    "accuracy": 0.75,
+    "precision": 0.7692,
+    "recall_sensitivity": 0.7143,
+    "specificity": 0.7857,
+    "f1_score": 0.7407,
+    "roc_auc": 0.8469,
+    "train_accuracy": 1.0,
+    "train_test_gap": 0.25,
+    "confusion_matrix": {
+      "TP": 10,
+      "FP": 3,
+      "FN": 4,
+      "TN": 11
+    }
+  }
+}

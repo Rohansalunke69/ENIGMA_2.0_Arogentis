@@ -51,6 +51,18 @@ uploaded_file = st.file_uploader(
 if uploaded_file is not None:
     st.success(f"✅ File received: **{uploaded_file.name}** ({uploaded_file.size / 1024:.1f} KB)")
 
+    # ─── PSG / Sleep File Detection ────────────────────────────────────────────
+    fname_upper = uploaded_file.name.upper()
+    psg_indicators = ("PSG", "SLEEP", "SC4", "ST7", "SN", "HYP")
+    if any(ind in fname_upper for ind in psg_indicators):
+        st.warning(
+            "⚠️ **This file appears to be a PSG / Sleep study recording.** "
+            "This system is designed for **resting-state EEG only** (awake subjects, eyes closed). "
+            "Sleep EEG has different physiology and is NOT suitable for schizophrenia detection. "
+            "Results may be inaccurate or preprocessing may fail.",
+            icon="⚠️"
+        )
+
     with st.spinner("🔄 Running preprocessing pipeline..."):
         suffix = os.path.splitext(uploaded_file.name)[1]
         with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
@@ -62,7 +74,7 @@ if uploaded_file is not None:
             n_epochs = len(epochs)
             sfreq = epochs.info["sfreq"]
             n_channels = len(epochs.ch_names)
-            duration = epochs.times[-1] * n_epochs
+            duration = (epochs.times[-1] * n_epochs) if n_epochs > 0 else 0.0
 
             st.markdown("### ✅ Preprocessing Complete")
             c1, c2, c3, c4 = st.columns(4)
@@ -71,22 +83,32 @@ if uploaded_file is not None:
             c3.metric("Sampling Rate", f"{sfreq:.0f} Hz")
             c4.metric("Total Duration", f"{duration:.1f} s")
 
-            with st.spinner("🧮 Extracting biomarkers..."):
-                X, feature_names = extract_all_features(epochs, aggregate=True)
+            if n_epochs == 0:
+                st.error(
+                    "❌ **No clean epochs found.** All epochs were rejected during artifact removal. "
+                    "This may happen if:\n"
+                    "- The EEG file is a sleep/PSG recording with non-standard channels\n"
+                    "- The signal amplitude is very large (>300µV)\n"
+                    "- The recording is too short (<2 seconds)\n\n"
+                    "Please try a standard resting-state EEG file (.edf or .fif)."
+                )
+            else:
+                with st.spinner("🧮 Extracting biomarkers..."):
+                    X, feature_names = extract_all_features(epochs, aggregate=True)
 
-            # Store in session state for Analysis page
-            st.session_state["features"] = X[0]
-            st.session_state["feature_names"] = feature_names
-            st.session_state["epochs_info"] = {
-                "n_epochs": n_epochs,
-                "n_channels": n_channels,
-                "sfreq": sfreq,
-                "channel_names": epochs.ch_names,
-                "filename": uploaded_file.name,
-            }
+                # Store in session state for Analysis page
+                st.session_state["features"] = X[0]
+                st.session_state["feature_names"] = feature_names
+                st.session_state["epochs_info"] = {
+                    "n_epochs": n_epochs,
+                    "n_channels": n_channels,
+                    "sfreq": sfreq,
+                    "channel_names": epochs.ch_names,
+                    "filename": uploaded_file.name,
+                }
 
-            st.success(f"✅ **{len(feature_names)} biomarker features** extracted successfully!")
-            st.info("👉 Navigate to **2. Analysis** in the sidebar to see the risk score.")
+                st.success(f"✅ **{len(feature_names)} biomarker features** extracted successfully!")
+                st.info("👉 Navigate to **2. Analysis** in the sidebar to see the risk score.")
 
         except Exception as e:
             st.error(f"❌ Preprocessing failed: {e}")

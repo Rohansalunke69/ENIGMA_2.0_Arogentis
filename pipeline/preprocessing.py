@@ -1,14 +1,20 @@
 """
 EEG Preprocessing Pipeline — Arogentis
 ======================================
-Steps: Load → Bandpass Filter → Notch Filter → Average Reference → Epoch → Artifact Rejection
+Designed for RESTING-STATE EEG ONLY (awake subjects, eyes closed).
+Steps: Load → EEG Channel Selection → Bandpass Filter → Notch Filter → Average Reference → Epoch → Artifact Rejection
 
 WHY EACH STEP:
-  - Bandpass (0.5–100 Hz): removes DC drift (below 0.5) and high-frequency noise
-  - Notch (50 Hz):          removes powerline interference (Indian/EU standard)
-  - Average reference:      equalizes electrode potential, removes common-mode noise
-  - 2-second epochs:        enough samples for 0.5 Hz frequency resolution via Welch
-  - 150 µV rejection:       clinical threshold to exclude eye blinks / EMG artifacts
+  - Bandpass (1–40 Hz): removes DC drift and slow movement artifact (below 1 Hz)
+                        and high-frequency EMG/noise. 40 Hz cap is standard for
+                        resting-state clinical EEG; avoids facial muscle contamination.
+  - Notch (50 Hz):      removes powerline interference (Indian/EU/Polish standard)
+  - Average reference:  equalizes electrode potential, removes common-mode noise
+  - 2-second epochs:    gives 0.5 Hz frequency resolution via Welch PSD;
+                        standard in schizophrenia EEG research (Olejarczyk & Jernajczyk, 2017)
+  - 100 µV rejection:   correct clinical threshold for AWAKE resting-state EEG.
+                        Values > 100 µV almost always indicate eye blinks or EMG.
+                        (NOTE: sleep/PSG EEG uses 150-500 µV — this pipeline does NOT support PSG)
 """
 
 import logging
@@ -41,6 +47,24 @@ def load_raw_eeg(filepath: str) -> mne.io.Raw:
     else:
         raise ValueError(f"Unsupported file format. Expected .edf or .fif, got: {filepath}")
 
+    # ── Channel Selection ─────────────────────────────────────────────────────
+    # Strategy 1: pick channels officially typed as EEG
+    eeg_picks = mne.pick_types(raw.info, meg=False, eeg=True, exclude="bads")
+
+    if len(eeg_picks) > 0:
+        raw.pick(eeg_picks)
+        logger.info(f"Picked {len(eeg_picks)} typed-EEG channels.")
+    else:
+        # Strategy 2: pick by name prefix (Sleep-EDF, TUAR, etc. label EEG channels as 'EEG Fpz-Cz' etc.)
+        eeg_by_name = [ch for ch in raw.ch_names
+                       if any(k in ch.upper() for k in ("EEG", "FP", "FZ", "CZ", "OZ", "PZ", "AF", "FC", "CP", "PO"))]
+        if eeg_by_name:
+            raw.pick(eeg_by_name)
+            logger.info(f"Picked {len(eeg_by_name)} name-matched EEG channels: {eeg_by_name}")
+        else:
+            # Strategy 3: use everything — best effort
+            logger.warning(f"No EEG channels identified. Using all {len(raw.ch_names)} channels as fallback.")
+
     logger.info(
         f"Loaded EEG: {filepath} | "
         f"Channels: {len(raw.ch_names)} | "
@@ -52,20 +76,36 @@ def load_raw_eeg(filepath: str) -> mne.io.Raw:
 
 def preprocess(raw: mne.io.Raw, notch_freq: float = 50.0) -> mne.io.Raw:
     """
-    Apply standard clinical EEG preprocessing.
+    Apply standard clinical EEG preprocessing for RESTING-STATE recordings.
+
+    Bandpass: 1–40 Hz
+      - 1 Hz high-pass: removes DC offset and slow drift artifacts
+      - 40 Hz low-pass: removes EMG (facial muscle) and line noise harmonics
+      - This is the clinical standard for resting-state schizophrenia EEG
+        (Olejarczyk & Jernajczyk, 2017; Borisov et al., 2005)
 
     Args:
         raw:        Loaded MNE Raw object.
-        notch_freq: Power line interference frequency. 50 Hz (India/EU), 60 Hz (US).
+        notch_freq: Power line interference frequency. 50 Hz (India/EU/Poland), 60 Hz (US).
 
     Returns:
         Preprocessed MNE Raw object.
     """
-    logger.info("Applying bandpass filter (0.5–100 Hz)...")
-    raw.filter(l_freq=0.5, h_freq=100.0, fir_design="firwin", verbose=False)
+    nyquist = raw.info["sfreq"] / 2.0
 
-    logger.info(f"Applying notch filter ({notch_freq} Hz)...")
-    raw.notch_filter(freqs=[notch_freq], verbose=False)
+    # Resting-state standard: 1–40 Hz
+    # Dynamically cap h_freq below Nyquist for low-sfreq files
+    h_freq = min(40.0, nyquist - 1.0)
+    l_freq = 1.0
+    logger.info(f"Applying bandpass filter ({l_freq}–{h_freq} Hz) [Nyquist={nyquist} Hz]...")
+    raw.filter(l_freq=l_freq, h_freq=h_freq, fir_design="firwin", verbose=False)
+
+    # Only apply notch filter if notch frequency is safely below Nyquist
+    if notch_freq < nyquist:
+        logger.info(f"Applying notch filter ({notch_freq} Hz)...")
+        raw.notch_filter(freqs=[notch_freq], verbose=False)
+    else:
+        logger.warning(f"Skipping notch filter: {notch_freq} Hz >= Nyquist {nyquist} Hz")
 
     logger.info("Setting average reference...")
     raw.set_eeg_reference("average", projection=False, verbose=False)
@@ -117,29 +157,44 @@ def epoch_data(raw: mne.io.Raw, epoch_duration: float = 2.0) -> mne.Epochs:
     return epochs
 
 
-def reject_artifacts(epochs: mne.Epochs, peak_to_peak_uv: float = 150.0) -> mne.Epochs:
+def reject_artifacts(epochs: mne.Epochs, peak_to_peak_uv: float = 100.0) -> mne.Epochs:
     """
     Reject epochs containing artifacts based on peak-to-peak amplitude.
 
-    Clinical threshold: 150 µV is standard for resting-state wakefulness EEG.
-    Values > 150 µV almost always indicate eye blinks, jaw movement, or cable artifacts.
+    Threshold: 100 µV — correct for AWAKE resting-state EEG.
+      - Eyes-closed resting EEG amplitude: typically 10–80 µV
+      - Eye blinks artifact: 200–500 µV → correctly rejected at 100 µV
+      - EMG artifact: often >100 µV → correctly rejected
+      - Why NOT 150 µV or 500 µV: those are for sleep EEG which has large slow waves.
+        For awake resting-state, 100 µV is the well-established clinical threshold.
+        Reference: Kleiner et al., 2007; standard in EEGLAB/MNE pipelines.
 
     Args:
         epochs:           MNE Epochs object.
-        peak_to_peak_uv:  Rejection threshold in microvolts.
+        peak_to_peak_uv:  Rejection threshold in microvolts (default 100 µV).
 
     Returns:
         Clean MNE Epochs object with bad epochs removed.
     """
     threshold = peak_to_peak_uv * 1e-6  # convert µV → V (MNE internal unit)
-    reject_criteria = dict(eeg=threshold)
+
+    # Build reject dict using actual EEG channel types present
+    ch_types_present = set(epochs.get_channel_types())
+    if "eeg" in ch_types_present:
+        reject_criteria = {"eeg": threshold}
+    else:
+        # Unlabeled channels: skip rejection rather than reject everything
+        logger.warning("No typed-EEG channels found; skipping artifact rejection.")
+        reject_criteria = None
+
     n_before = len(epochs)
-    epochs.drop_bad(reject=reject_criteria)
+    if reject_criteria:
+        epochs.drop_bad(reject=reject_criteria)
     n_after = len(epochs)
+    pct = (n_before - n_after) / n_before * 100 if n_before > 0 else 0
     logger.info(
         f"Artifact rejection: {n_before - n_after}/{n_before} epochs rejected "
-        f"({(n_before - n_after) / n_before * 100:.1f}% removed). "
-        f"{n_after} clean epochs remaining."
+        f"({pct:.1f}% removed). {n_after} clean epochs remaining."
     )
     return epochs
 
@@ -148,16 +203,16 @@ def run_preprocessing(
     filepath: str,
     notch_freq: float = 50.0,
     epoch_duration: float = 2.0,
-    peak_to_peak_uv: float = 150.0,
+    peak_to_peak_uv: float = 100.0,
 ) -> mne.Epochs:
     """
-    Full preprocessing pipeline: Load → Filter → Epoch → Reject.
+    Full preprocessing pipeline for RESTING-STATE EEG: Load → Filter → Epoch → Reject.
 
     Args:
         filepath:         Path to the raw EEG file (.edf or .fif).
-        notch_freq:       Power line frequency in Hz.
-        epoch_duration:   Duration of each epoch in seconds.
-        peak_to_peak_uv:  Artifact rejection threshold in µV.
+        notch_freq:       Power line frequency in Hz (50 for India/EU/Poland, 60 for US).
+        epoch_duration:   Duration of each epoch in seconds (2.0 is standard).
+        peak_to_peak_uv:  Artifact rejection threshold in µV (100 µV for awake resting-state).
 
     Returns:
         Clean MNE Epochs object ready for feature extraction.

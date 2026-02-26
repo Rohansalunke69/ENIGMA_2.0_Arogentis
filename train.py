@@ -32,8 +32,12 @@ def main():
     parser = argparse.ArgumentParser(description="Arogentis Model Training")
     parser.add_argument("--synthetic", action="store_true",
                         help="Use synthetic EEG data (no real data needed)")
+    parser.add_argument("--physionet", action="store_true",
+                        help="Download + train on PhysioNet schizophrenia resting-state EEG")
     parser.add_argument("--advanced", action="store_true",
                         help="Also train XGBoost with hyperparameter tuning")
+    parser.add_argument("--optimize", action="store_true",
+                        help="Run full scientific optimization: SHAP feature selection + LOSOCV + multi-model")
     parser.add_argument("--data_dir", default="data/raw",
                         help="Directory with raw EEG files")
     parser.add_argument("--label_file", default="data/labels.csv",
@@ -51,11 +55,28 @@ def main():
     y_path    = os.path.join(args.output_dir, "y.npy")
     feat_path = os.path.join(args.output_dir, "feature_names.txt")
 
-    if args.synthetic or not (os.path.exists(X_path) and os.path.exists(y_path)):
+    if args.synthetic or args.physionet or not (os.path.exists(X_path) and os.path.exists(y_path)):
         logger.info("Generating dataset...")
         from pipeline.dataset_builder import generate_synthetic_dataset, build_dataset
         if args.synthetic:
             X, y, feature_names = generate_synthetic_dataset(output_dir=args.output_dir)
+        elif args.physionet:
+            # Download PhysioNet schizophrenia resting-state EEG dataset
+            logger.info("=" * 60)
+            logger.info("DOWNLOADING PhysioNet Schizophrenia Resting-State EEG Dataset")
+            logger.info("Olejarczyk & Jernajczyk (2017) — 14 SZ + 14 HC subjects")
+            logger.info("=" * 60)
+            from pipeline.data_downloader import download_dataset, generate_labels_csv
+            download_dataset(output_dir=args.data_dir)
+            label_file = generate_labels_csv(
+                output_dir=os.path.dirname(args.data_dir) or "data",
+                data_dir=args.data_dir,
+            )
+            X, y, feature_names = build_dataset(
+                data_dir=args.data_dir,
+                label_file=label_file,
+                output_dir=args.output_dir,
+            )
         else:
             X, y, feature_names = build_dataset(
                 data_dir=args.data_dir,
@@ -104,6 +125,18 @@ def main():
             save_path=os.path.join(args.model_dir, "xgb_model.pkl"),
         )
         logger.info("XGBoost training complete.")
+
+    # ── Step 5 (Optional): Full Scientific Optimization ───────────────────────
+    if args.optimize:
+        logger.info("Running full scientific optimization pipeline...")
+        from models.optimize import run_optimization
+        report = run_optimization(
+            X=X, y=y, feature_names=feature_names,
+            top_k=50,
+            output_dir=os.path.join(args.model_dir, "optimize"),
+        )
+        logger.info(f"Optimization complete. Best: {report['best_model']} "
+                    f"(AUC={report['best_metrics']['roc_auc']:.3f})")
 
     logger.info("✅ All training complete. Model saved to: " + args.model_dir)
     logger.info("Launch API:       uvicorn backend.main:app --reload")
