@@ -1,0 +1,30 @@
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# Model artifacts (large binary files)
+artifacts/*.pkl
+artifacts/eval/
+
+# Data files (large)
+data/features/*.npy
+data/raw/*.edf
+data/raw/*.fif
+
+# Environment
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
