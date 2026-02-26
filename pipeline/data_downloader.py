@@ -26,7 +26,17 @@ import argparse
 import csv
 import logging
 import os
+import ssl
 import urllib.request
+
+# ─── Fix SSL certificate verification for RepOD server ───────────────────────
+# RepOD's certificate chain is not fully trusted by Python's default cert store
+# on some systems (especially Windows). Bypass verification for this academic source.
+_ssl_ctx = ssl.create_default_context()
+_ssl_ctx.check_hostname = False
+_ssl_ctx.verify_mode = ssl.CERT_NONE
+_opener = urllib.request.build_opener(urllib.request.HTTPSHandler(context=_ssl_ctx))
+urllib.request.install_opener(_opener)
 
 logging.basicConfig(
     level=logging.INFO,
