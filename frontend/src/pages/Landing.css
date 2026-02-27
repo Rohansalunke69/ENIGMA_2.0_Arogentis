@@ -142,8 +142,9 @@
   z-index: 5;
   mix-blend-mode: multiply;
   /* blends the image background transparent */
-  -webkit-mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 1) 45%, rgba(0, 0, 0, 0) 75%);
-  mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 1) 45%, rgba(0, 0, 0, 0) 75%);
+  /* strict vertical ellipse mask to delete 'Core Guard' side text */
+  -webkit-mask-image: radial-gradient(ellipse 25% 65% at 50% 50%, rgba(0, 0, 0, 1) 50%, rgba(0, 0, 0, 0) 100%);
+  mask-image: radial-gradient(ellipse 25% 65% at 50% 50%, rgba(0, 0, 0, 1) 50%, rgba(0, 0, 0, 0) 100%);
   transform: translateY(2rem);
   /* grounds her to the bottom axis better */
 }
