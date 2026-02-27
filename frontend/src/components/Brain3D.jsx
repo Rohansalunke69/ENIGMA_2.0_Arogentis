@@ -31,7 +31,7 @@ function RealBrainPoints() {
         return (
             <mesh>
                 <sphereGeometry args={[10, 16, 16]} />
-                <meshBasicMaterial color="#0ea5e9" wireframe opacity={0.2} transparent />
+                <meshBasicMaterial color="#f59e0b" wireframe opacity={0.2} transparent />
             </mesh>
         );
     }
@@ -42,7 +42,7 @@ function RealBrainPoints() {
             <Points ref={pointsRef} positions={positions} stride={3}>
                 <PointMaterial
                     transparent
-                    color="#38bdf8"
+                    color="#fbbf24"
                     size={0.15}
                     sizeAttenuation={true}
                     depthWrite={false}
@@ -52,7 +52,7 @@ function RealBrainPoints() {
             {/* A subtle glowing core for depth */}
             <mesh position={[0, 0, 0]}>
                 <sphereGeometry args={[45, 32, 32]} />
-                <meshBasicMaterial color="#0ea5e9" transparent opacity={0.05} blending={THREE.AdditiveBlending} />
+                <meshBasicMaterial color="#f59e0b" transparent opacity={0.05} blending={THREE.AdditiveBlending} />
             </mesh>
         </group>
     );
@@ -91,7 +91,7 @@ function NeuralParticles() {
         <Points ref={pointsRef} positions={positions} stride={3}>
             <PointMaterial
                 transparent
-                color="#ffffff"
+                color="#4ade80"
                 size={1.2}
                 sizeAttenuation={true}
                 depthWrite={false}
@@ -108,7 +108,7 @@ export default function Brain3D() {
             <Canvas camera={{ position: [0, 0, 160], fov: 45 }}>
                 <ambientLight intensity={0.5} />
                 <directionalLight position={[100, 100, 50]} intensity={1.5} color="#ffffff" />
-                <directionalLight position={[-100, -100, -50]} intensity={0.5} color="#0ea5e9" />
+                <directionalLight position={[-100, -100, -50]} intensity={0.5} color="#f59e0b" />
 
                 <RealBrainPoints />
                 <NeuralParticles />
