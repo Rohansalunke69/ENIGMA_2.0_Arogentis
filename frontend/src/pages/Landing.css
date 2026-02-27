@@ -134,13 +134,18 @@
 }
 
 .hero-girl-img {
-  height: 90vh;
-  /* Adjust as needed so she fits well */
+  height: 85vh;
+  /* slightly smaller to fit screen perfectly */
+  object-fit: contain;
+  /* prevents any stretching */
+  position: relative;
+  z-index: 5;
   mix-blend-mode: multiply;
-  /* Blends pure white background away */
-  /* Fade the left and right 35% of the image to transparent to delete the baked 'NeuroCare' text */
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, transparent 28%, black 42%, black 58%, transparent 72%, transparent 100%);
-  mask-image: linear-gradient(to right, transparent 0%, transparent 28%, black 42%, black 58%, transparent 72%, transparent 100%);
+  /* blends the image background transparent */
+  -webkit-mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 1) 45%, rgba(0, 0, 0, 0) 75%);
+  mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 1) 45%, rgba(0, 0, 0, 0) 75%);
+  transform: translateY(2rem);
+  /* grounds her to the bottom axis better */
 }
 
 /* ── Vertical Nav ── */
