@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import Brain3D from "../components/Brain3D";
 import "./Landing.css";
 
 export default function Landing() {
@@ -32,8 +31,8 @@ export default function Landing() {
             {/* Main Center Content */}
             <div className="landing-hero">
                 <h1 className="hero-bg-text">NEUROSCAN</h1>
-                <div className="brain-container">
-                    <Brain3D />
+                <div className="girl-container">
+                    <img src="/20678a8a57b988929b2a568138552a3d.webp" alt="NeuroScan Silhouette" className="hero-girl-img" />
                 </div>
             </div>
 
