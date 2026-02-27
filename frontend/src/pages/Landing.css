@@ -1,69 +1,100 @@
+/* ═══════════════════════════════════════════
+   NeuroScan Landing — Premium Dark Hero
+   ═══════════════════════════════════════════ */
+
 .landing {
   min-height: 100vh;
-  position: relative;
-  overflow: hidden;
+  background: #f8fbff;
 }
 
-/* ── Animated background circles ── */
-.bg-circles {
-  position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  pointer-events: none;
-  z-index: 0;
+/* ── Dark Hero Section ── */
+.hero-section {
+  position: relative;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+  overflow: hidden;
+  padding-bottom: 3rem;
 }
-.bg-circles span {
+
+/* EEG background waves */
+.eeg-bg {
   position: absolute;
-  border-radius: 50%;
-  background: rgba(14, 165, 233, 0.06);
-  animation: float 20s infinite ease-in-out;
-}
-.bg-circles span:nth-child(1) { width: 300px; height: 300px; top: -50px;  left: -80px;  animation-delay: 0s; }
-.bg-circles span:nth-child(2) { width: 200px; height: 200px; top: 40%;   right: -60px; animation-delay: 4s; }
-.bg-circles span:nth-child(3) { width: 150px; height: 150px; bottom: 10%; left: 20%;    animation-delay: 8s; }
-.bg-circles span:nth-child(4) { width: 250px; height: 250px; top: 20%;   left: 50%;    animation-delay: 2s; }
-.bg-circles span:nth-child(5) { width: 180px; height: 180px; bottom: 5%;  right: 15%;   animation-delay: 6s; }
-@keyframes float {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-30px) scale(1.05); }
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 200px;
+  pointer-events: none;
+  opacity: 0.6;
 }
 
 /* ── Navbar ── */
 .navbar {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 1.25rem 2rem;
+  padding: 1.25rem 2.5rem;
 }
+
 .logo {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   font-weight: 700;
-  font-size: 1.25rem;
-  color: #0c4a6e;
+  font-size: 1.2rem;
+  color: #ffffff;
 }
+
+.nav-links {
+  display: flex;
+  gap: 1.75rem;
+  margin-left: 3rem;
+}
+
+.nav-links a {
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover {
+  color: #ffffff;
+}
+
 .status-badge {
+  margin-left: auto;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.85rem;
-  color: #64748b;
-  background: #f0f9ff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
   padding: 0.4rem 1rem;
   border-radius: 999px;
-  border: 1px solid #e0f2fe;
 }
-.dot {
-  width: 8px; height: 8px;
+
+.status-badge.offline {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.status-badge.loading {
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  display: inline-block;
+  background: currentColor;
+  box-shadow: 0 0 6px currentColor;
 }
-.dot.online  { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
-.dot.offline { background: #ef4444; }
-.dot.loading { background: #f59e0b; animation: pulse 1s infinite; }
-@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
 /* ── Hero ── */
 .hero {
@@ -72,39 +103,45 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4rem 2rem 2rem;
-  max-width: 1100px;
+  padding: 3rem 2.5rem 2rem;
+  max-width: 1200px;
   margin: 0 auto;
   gap: 2rem;
 }
+
 .hero-content {
   flex: 1;
   animation: slideUp 0.8s ease-out;
 }
+
 .hero-content h1 {
-  font-size: 2.8rem;
+  font-size: 3rem;
   font-weight: 800;
-  color: #0c4a6e;
-  line-height: 1.15;
-  margin-bottom: 1rem;
+  color: #ffffff;
+  line-height: 1.12;
+  margin-bottom: 1.25rem;
 }
+
 .hero-content p {
-  font-size: 1.1rem;
-  color: #475569;
+  font-size: 1.05rem;
+  color: #94a3b8;
   line-height: 1.7;
-  max-width: 500px;
-  margin-bottom: 1.5rem;
+  max-width: 480px;
+  margin-bottom: 1.75rem;
 }
+
 .disclaimer {
-  font-size: 0.8rem !important;
-  color: #94a3b8 !important;
+  font-size: 0.78rem !important;
+  color: #64748b !important;
   margin-top: 1rem !important;
 }
+
 .hero-actions {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
 }
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -117,94 +154,169 @@
   cursor: pointer;
   border: none;
 }
+
 .btn-primary {
   background: #0ea5e9;
   color: #fff;
-  box-shadow: 0 4px 14px rgba(14, 165, 233, 0.3);
+  box-shadow: 0 4px 16px rgba(14, 165, 233, 0.35);
 }
+
 .btn-primary:hover {
   background: #0284c7;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(14, 165, 233, 0.4);
-}
-.btn-outline {
-  background: transparent;
-  color: #0ea5e9;
-  border: 2px solid #bae6fd;
-}
-.btn-outline:hover {
-  background: #f0f9ff;
-  border-color: #0ea5e9;
+  box-shadow: 0 6px 24px rgba(14, 165, 233, 0.45);
 }
 
-/* ── Hero visual ── */
+.btn-outline {
+  background: transparent;
+  color: #cbd5e1;
+  border: 2px solid rgba(148, 163, 184, 0.3);
+}
+
+.btn-outline:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(148, 163, 184, 0.5);
+  color: #ffffff;
+}
+
+/* ── Hero Visual (3D brain) ── */
 .hero-visual {
-  flex: 0 0 280px;
+  flex: 0 0 380px;
+  height: 380px;
   display: flex;
   justify-content: center;
   animation: fadeIn 1.2s ease-out;
 }
-.brain-icon svg {
-  width: 260px;
-  height: 260px;
-  animation: rotateSlow 30s linear infinite;
-}
-@keyframes rotateSlow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-/* ── Features ── */
+/* ── Features Section ── */
 .features {
-  position: relative;
-  z-index: 1;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
-  padding: 3rem 2rem;
-  max-width: 1100px;
+  padding: 3.5rem 2.5rem;
+  max-width: 1200px;
   margin: 0 auto;
 }
+
 .feature-card {
   background: #ffffff;
-  border: 1px solid #e0f2fe;
-  border-radius: 14px;
-  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 2rem 1.5rem;
   text-align: center;
   transition: all 0.3s;
   animation: slideUp 0.8s ease-out both;
 }
-.feature-card:nth-child(2) { animation-delay: 0.1s; }
-.feature-card:nth-child(3) { animation-delay: 0.2s; }
+
+.feature-card:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.feature-card:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
 .feature-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 30px rgba(14, 165, 233, 0.1);
+  transform: translateY(-6px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
   border-color: #bae6fd;
 }
-.feature-icon { font-size: 2rem; margin-bottom: 0.75rem; }
-.feature-card h3 {
-  font-size: 1.1rem;
-  color: #0c4a6e;
-  margin-bottom: 0.5rem;
+
+.feature-icon-wrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
 }
+
+.feature-icon-wrap.blue {
+  background: #e8eef6;
+  color: #4a6fa5;
+}
+
+.feature-icon-wrap.pink {
+  background: #f3e8ef;
+  color: #a4607a;
+}
+
+.feature-icon-wrap.cyan {
+  background: #e6f2f2;
+  color: #4a8f8f;
+}
+
+.feature-card h3 {
+  font-size: 1.05rem;
+  color: #0f172a;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
 .feature-card p {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: #64748b;
   line-height: 1.6;
 }
 
 /* ── Animations ── */
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
+
 @keyframes fadeIn {
-  from { opacity: 0; } to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* ── Responsive ── */
-@media (max-width: 768px) {
-  .hero { flex-direction: column; text-align: center; padding-top: 2rem; }
-  .hero-content h1 { font-size: 2rem; }
-  .hero-content p { max-width: 100%; }
-  .hero-actions { justify-content: center; }
-  .hero-visual { flex: auto; }
-  .brain-icon svg { width: 180px; height: 180px; }
+@media (max-width: 900px) {
+  .hero {
+    flex-direction: column;
+    text-align: center;
+    padding-top: 2rem;
+  }
+
+  .hero-content h1 {
+    font-size: 2.2rem;
+  }
+
+  .hero-content p {
+    max-width: 100%;
+  }
+
+  .hero-actions {
+    justify-content: center;
+  }
+
+  .hero-visual {
+    flex: auto;
+    height: 280px;
+  }
+
+  .features {
+    grid-template-columns: 1fr;
+  }
+
+  .nav-links {
+    display: none;
+  }
+
+  .navbar {
+    padding: 1rem 1.5rem;
+  }
 }

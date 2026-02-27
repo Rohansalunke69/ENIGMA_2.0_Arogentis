@@ -208,6 +208,9 @@ def run_preprocessing(
     """
     Full preprocessing pipeline for RESTING-STATE EEG: Load → Filter → Epoch → Reject.
 
+    If the default threshold rejects all epochs, progressively relax it
+    to handle EEG files from different sources and amplitude scales.
+
     Args:
         filepath:         Path to the raw EEG file (.edf or .fif).
         notch_freq:       Power line frequency in Hz (50 for India/EU/Poland, 60 for US).
@@ -220,5 +223,21 @@ def run_preprocessing(
     raw = load_raw_eeg(filepath)
     raw = preprocess(raw, notch_freq=notch_freq)
     epochs = epoch_data(raw, epoch_duration=epoch_duration)
-    epochs = reject_artifacts(epochs, peak_to_peak_uv=peak_to_peak_uv)
+
+    # Progressive threshold relaxation: try increasingly lenient thresholds
+    thresholds = [peak_to_peak_uv, 200.0, 500.0, 1000.0]
+    for thresh in thresholds:
+        test_epochs = epochs.copy()
+        test_epochs = reject_artifacts(test_epochs, peak_to_peak_uv=thresh)
+        if len(test_epochs) > 0:
+            if thresh > peak_to_peak_uv:
+                logger.warning(
+                    f"Default threshold ({peak_to_peak_uv} µV) rejected all epochs. "
+                    f"Using relaxed threshold: {thresh} µV → {len(test_epochs)} clean epochs."
+                )
+            return test_epochs
+
+    # If all thresholds reject everything, skip rejection entirely
+    logger.warning("All thresholds rejected all epochs. Skipping artifact rejection entirely.")
     return epochs
+

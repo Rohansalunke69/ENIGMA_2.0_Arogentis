@@ -1,0 +1,369 @@
+/* ═══════════════════════════════════════════
+   Final Report Page
+   ═══════════════════════════════════════════ */
+
+.report-main {
+    flex: 1;
+    padding: 1.5rem 2rem;
+    overflow-y: auto;
+    max-width: 900px;
+}
+
+/* ── Report Cards ── */
+.report-card,
+.report-header-card {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 1.5rem;
+    border: 1px solid #f1f5f9;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    margin-bottom: 1rem;
+    animation: reportFade 0.5s ease-out both;
+}
+
+.report-card:nth-child(2) {
+    animation-delay: 0.05s;
+}
+
+.report-card:nth-child(3) {
+    animation-delay: 0.1s;
+}
+
+.report-card:nth-child(4) {
+    animation-delay: 0.15s;
+}
+
+.report-card:nth-child(5) {
+    animation-delay: 0.2s;
+}
+
+.report-card h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+/* ── Header Card ── */
+.report-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.report-title-row h1 {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.report-sub {
+    font-size: 0.82rem;
+    color: #64748b;
+    margin-top: 0.2rem;
+}
+
+.print-btn {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.print-btn:hover {
+    background: #e2e8f0;
+}
+
+.report-meta-row {
+    display: flex;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.report-meta-row span {
+    font-size: 0.78rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+/* ── Risk Summary ── */
+.risk-summary {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.risk-big-score {
+    flex: 0 0 120px;
+    height: 120px;
+    border-radius: 14px;
+    border: 2px solid;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.risk-number {
+    font-size: 2rem;
+    font-weight: 800;
+}
+
+.risk-tier {
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.risk-text {
+    flex: 1;
+}
+
+.risk-text p {
+    font-size: 0.88rem;
+    color: #334155;
+    line-height: 1.7;
+}
+
+/* ── Findings ── */
+.findings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.findings-heading {
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+}
+
+.risk-heading {
+    color: #dc2626;
+}
+
+.protect-heading {
+    color: #16a34a;
+}
+
+.finding-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 8px;
+    margin-bottom: 0.3rem;
+    font-size: 0.78rem;
+}
+
+.risk-item {
+    background: #fef2f2;
+}
+
+.protect-item {
+    background: #f0fdf4;
+}
+
+.finding-rank {
+    font-weight: 700;
+    color: #94a3b8;
+    flex: 0 0 24px;
+}
+
+.finding-name {
+    flex: 1;
+    color: #334155;
+    word-break: break-all;
+}
+
+.finding-val {
+    color: #64748b;
+    font-family: monospace;
+    font-size: 0.72rem;
+}
+
+.no-findings {
+    font-size: 0.82rem;
+    color: #94a3b8;
+}
+
+/* ── Band Table ── */
+.band-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.band-table th {
+    text-align: left;
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 600;
+    padding: 0.5rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.band-table td {
+    padding: 0.5rem;
+    border-bottom: 1px solid #f8fafc;
+}
+
+.band-name {
+    font-weight: 600;
+    color: #0f172a;
+    font-size: 0.85rem;
+    text-transform: capitalize;
+}
+
+.band-val {
+    color: #64748b;
+    font-size: 0.82rem;
+    font-family: monospace;
+}
+
+.band-bar-cell {
+    width: 40%;
+}
+
+.band-bar-track {
+    height: 8px;
+    background: #f1f5f9;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.band-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #38bdf8, #0ea5e9);
+    border-radius: 4px;
+    transition: width 0.6s ease-out;
+}
+
+/* ── Channel Grid ── */
+.channel-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.report-chip {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #0369a1;
+    background: #e0f2fe;
+    padding: 0.25rem 0.6rem;
+    border-radius: 6px;
+}
+
+/* ── Disclaimer ── */
+.disclaimer-card {
+    background: #fffbeb;
+    border-color: #fef3c7;
+}
+
+.disclaimer-card h2 {
+    color: #92400e;
+    border-color: #fde68a;
+}
+
+.disclaimer-card p {
+    font-size: 0.85rem;
+    color: #78350f;
+    line-height: 1.7;
+}
+
+/* ── Empty State ── */
+.report-empty {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: #f1f5f9;
+}
+
+.report-empty h2 {
+    color: #0f172a;
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+}
+
+.report-empty p {
+    color: #64748b;
+    margin-bottom: 1.5rem;
+}
+
+.go-dash-btn {
+    background: #0ea5e9;
+    color: #fff;
+    border: none;
+    padding: 0.7rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.go-dash-btn:hover {
+    background: #0284c7;
+    transform: translateY(-2px);
+}
+
+@keyframes reportFade {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Print Styles ── */
+@media print {
+
+    .sidebar,
+    .print-btn {
+        display: none !important;
+    }
+
+    .dash-layout {
+        display: block;
+    }
+
+    .report-main {
+        padding: 0;
+        max-width: 100%;
+    }
+
+    .report-card {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    .risk-summary {
+        flex-direction: column;
+    }
+
+    .findings-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .report-title-row {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+}
