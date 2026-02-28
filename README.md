@@ -149,4 +149,3 @@ All outputs should be reviewed by qualified neurologists and psychiatrists.
 
 ---
 
-*Built for ENIGMA 2.0 Hackathon — Arogentis Team*
