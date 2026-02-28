@@ -1,6 +1,6 @@
-# 🧠 Arogentis — EEG-Based Schizophrenia Screening System
+# 🧠 ML — EEG-Based Schizophrenia Screening System
 
-> AI-powered early schizophrenia risk detection using EEG frequency-domain biomarkers,
+> Train ML schizophrenia risk detection using EEG frequency-domain biomarkers,
 > explainable machine learning, and a Streamlit dashboard.
 > **For research use only. Not a medical diagnostic tool.**
 
