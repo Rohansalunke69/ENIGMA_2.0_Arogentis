@@ -5,7 +5,7 @@ import * as THREE from "three";
 
 // A stylized real brain using the extracted MNE fsaverage coordinates
 function RealBrainPoints() {
-    const pointsRef = useRef();
+    const animRef = useRef();
     const [positions, setPositions] = useState(null);
 
     useEffect(() => {
@@ -20,11 +20,11 @@ function RealBrainPoints() {
     }, []);
 
     useFrame((state) => {
-        if (!pointsRef.current) return;
-        // Gentle rotation over time
-        pointsRef.current.rotation.y = state.clock.elapsedTime * 0.15;
+        if (!animRef.current) return;
+        // Start from lateral (side) view and slowly rotate
+        animRef.current.rotation.y = (Math.PI / 2) + state.clock.elapsedTime * 0.15;
         // Subtle hover effect
-        pointsRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.8) * 0.5;
+        animRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.8) * 0.5;
     });
 
     if (!positions) {
@@ -37,18 +37,20 @@ function RealBrainPoints() {
     }
 
     return (
-        <group>
-            {/* The main point cloud - using real brain topology */}
-            <Points ref={pointsRef} positions={positions} stride={3}>
-                <PointMaterial
-                    transparent
-                    color="#fbbf24"
-                    size={0.15}
-                    sizeAttenuation={true}
-                    depthWrite={false}
-                    blending={THREE.AdditiveBlending}
-                />
-            </Points>
+        <group ref={animRef}>
+            <group rotation={[-Math.PI / 2, 0, 0]}>
+                {/* The main point cloud - using real brain topology */}
+                <Points positions={positions} stride={3}>
+                    <PointMaterial
+                        transparent
+                        color="#fbbf24"
+                        size={0.15}
+                        sizeAttenuation={true}
+                        depthWrite={false}
+                        blending={THREE.AdditiveBlending}
+                    />
+                </Points>
+            </group>
             {/* A subtle glowing core for depth */}
             <mesh position={[0, 0, 0]}>
                 <sphereGeometry args={[45, 32, 32]} />
