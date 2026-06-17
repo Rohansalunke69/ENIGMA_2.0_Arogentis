@@ -352,7 +352,7 @@
   height: 420px;
   border-radius: 50%;
   overflow: hidden;
-  background: radial-gradient(ellipse at center, #0c1929 0%, #060d18 60%, #030812 100%);
+  background: transparent;
   box-shadow:
     0 0 60px rgba(56, 189, 248, 0.2),
     0 0 120px rgba(78, 205, 196, 0.1),
